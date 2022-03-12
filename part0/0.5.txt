@@ -1,0 +1,32 @@
+title 0.5
+
+
+browser->server: HTTP GET https://studies.cs.helsinki.fi/exampleapp/spa
+server-->browser: HTTP 200: spa.html
+
+note over browser:
+Browser encounters a link tag, requests the style sheet
+end note
+
+browser->server: HTTP GET https://studies.cs.helsinki.fi/exampleapp/main.css
+server-->browser: HTTP 200: main.css
+
+note over browser:
+Browser encounters a script tag, requests the source file
+end note
+
+browser->server: HTTP GET https://studies.cs.helsinki.fi/exampleapp/main.js
+server-->browser: HTTP 200: main.js
+
+note over browser:
+browser starts executing js-code
+that requests JSON data from server 
+end note
+
+browser->server: HTTP GET https://studies.cs.helsinki.fi/exampleapp/data.json
+server-->browser: [{ content: "HTML is easy", date: "2019-05-23" }, ...]
+
+note over browser:
+browser executes the event handler
+that renders notes to display
+end note
