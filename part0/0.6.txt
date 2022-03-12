@@ -1,0 +1,14 @@
+title 0.6
+
+note over browser:
+Creates a new note { content: "Hello World!", date: new Date() }.
+Adds it to the array of notes and redraws the notes list.
+Sends the new note to the server.
+end note
+
+browser->server: HTTP POST https://studies.cs.helsinki.fi/exampleapp/new_note_spa: content-type: application/json
+server-->browser: HTTP 201: { message: "note created" }
+
+note over browser:
+Prints out the response {"message":"note created"}
+end note
