@@ -10,6 +10,22 @@ const App = (props) => {
   const getOnClick = (setState, state) => 
     () => { setState(state) }
 
+  const getNumFeedback = () => good + bad + neutral
+
+  const getAverage = () => {
+    const total = getNumFeedback()
+    return total === 0
+      ? 0.0
+      : ((1 * good) + (0 * neutral) + (-1 * bad)) / total
+  }
+
+  const getPositiveRatio = () => {
+    const total = getNumFeedback()
+    return total === 0
+      ? 0.0
+      : good / total
+  }
+  
   return (
     <div>
       <div>
@@ -23,6 +39,9 @@ const App = (props) => {
         good {good} <br/>
         neutral {neutral} <br/>
         bad {bad} <br/>
+        all {good + bad + neutral} <br/>
+        average {getAverage()}<br/>
+        positive {getPositiveRatio()} <br/>
       </div>
     </div>
   )   
