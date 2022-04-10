@@ -41,7 +41,7 @@ const App = (props) => {
         bad {bad} <br/>
         all {good + bad + neutral} <br/>
         average {getAverage()}<br/>
-        positive {getPositiveRatio()} <br/>
+        positive {getPositiveRatio() * 100}% <br/>
       </div>
     </div>
   )   
