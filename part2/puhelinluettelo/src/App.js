@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import axios from 'axios'
 
 const Contact = ({name, number}) => {
   return (
@@ -7,9 +8,11 @@ const Contact = ({name, number}) => {
 }
 
 const ContactList = ({persons, filter}) => {
+  console.log('persons', persons);
   const filtered = filter.length === 0
     ? persons
     : persons.filter(p => p.name.toLowerCase().includes(filter.toLowerCase()))
+  console.log('filtered', filtered);
   return (
     filtered.map((p) => <Contact key = {p.name} name = {p.name} number = {p.number} />) 
   )  
@@ -42,15 +45,22 @@ const NewContactForm = ({onFormSubmit, newName, onNameInputChange, newNumber, on
 }
 
 const App = () => {
-  const [persons, setPersons] = useState([
-    { name: 'Arto Hellas', number: '+358401111222' },
-    { name: 'Ada Lovelace', number: '39-44-5323523' },
-    { name: 'Dan Abramov', number: '12-43-234345' },
-    { name: 'Mary Poppendieck', number: '39-23-6423122' }
-  ]) 
+  const [persons, setPersons] = useState([]) 
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [filter, setFilter] = useState('')
+
+  const hook = () => {
+    console.log('effect');
+    axios
+      .get('http://localhost:3001/db')
+      .then(response => {
+        console.log('promise fulfilled')
+        setPersons(response.data.persons)
+      })
+  }
+  useEffect(hook, [])
+  
 
   const nameAlreadyExists = (name) => {
     const withSameName = persons.filter(p => p.name === name)  
