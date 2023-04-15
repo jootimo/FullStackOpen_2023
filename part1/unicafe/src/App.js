@@ -2,32 +2,32 @@ import { useState } from 'react'
 
 const Button = (props) => <button onClick={props.onClick}> {props.text} </button> 
 
+const StatisticsTitle = () => {
+  return <h1>statistics</h1>
+}
+
+const StatisticsLine = (props) => {
+  return (
+    <tr>
+      <td>
+        {props.text} 
+      </td>
+      <td>
+        {props.value} {props.suffix}
+      </td>
+    </tr>
+  )
+}
+
 const Statistics = (props) => {
   const getNumFeedback = (props) => props.good + props.bad + props.neutral
-
-  const Title = () => {
-    return <h1>statistics</h1>
-  }
 
   if(getNumFeedback(props) === 0) {
     return (
       <div>
-        <Title/>
+        <StatisticsTitle/>
         No feedback Given
       </div>
-    )
-  }
-
-  const StatisticsLine = (props) => {
-    return (
-      <tr>
-        <td>
-          {props.text} 
-        </td>
-        <td>
-          {props.value} {props.suffix}
-        </td>
-      </tr>
     )
   }
 
@@ -49,15 +49,15 @@ const Statistics = (props) => {
 
   return (
     <div>
-        <Title/>
+        <StatisticsTitle/>
         <table>
           <tbody>
             <StatisticsLine text = 'good' value = {props.good}/>
             <StatisticsLine text = 'neutral' value = {props.neutral}/>
             <StatisticsLine text = 'bad' value = {props.bad}/>
             <StatisticsLine text = 'all' value = {props.good + props.bad + props.neutral}/>
-            <StatisticsLine text = 'average' value = {getAverage(props)}/>
-            <StatisticsLine text = 'positive' value = {getPositiveRatio(props) * 100} suffix = '%'/>
+            <StatisticsLine text = 'average' value = {getAverage(props).toFixed(2)}/>
+            <StatisticsLine text = 'positive' value = {(getPositiveRatio(props) * 100).toFixed(0)} suffix = '%'/>
           </tbody>
         </table>
     </div>
