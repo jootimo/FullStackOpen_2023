@@ -1,19 +1,13 @@
 import { useState, useEffect } from 'react'
 import personService from './services/Persons'
 
-const Contact = ({name, number}) => {
+const Contact = ({person, onDelete}) => {
   return (
-    <p> {name} {number} </p>
+    <li> 
+      {person.name} {person.number} 
+      <button onClick= {onDelete}>delete</button>
+    </li>
   )
-}
-
-const ContactList = ({persons, filter}) => {
-  const filtered = filter.length === 0
-    ? persons
-    : persons.filter(p => p.name.toLowerCase().includes(filter.toLowerCase()))
-  return (
-    filtered.map((p) => <Contact key = {p.name} name = {p.name} number = {p.number} />) 
-  )  
 }
 
 const FilterForm = ({onFilterChange}) => {
@@ -48,36 +42,41 @@ const App = () => {
   const [newNumber, setNewNumber] = useState('')
   const [filter, setFilter] = useState('')
 
-  const hook = () => {
+  const fillPersonList = () => {
     personService.getAll()
-      .then(
-        allPersons => {
+      .then(allPersons => {
           console.log('Got persons from server:', allPersons)
           setPersons(allPersons)
-        }
-      )
+      })
+      .catch(error => alert('failed to get persons from server:', error))
   }
-  useEffect(hook, [])
-  
-
-  const nameAlreadyExists = (name) => {
-    const withSameName = persons.filter(p => p.name === name)  
-    return withSameName.length > 0 
-  }
+  useEffect(fillPersonList, [])
 
   const onFormSubmit = (event) => {
     event.preventDefault()
-    
-    if(nameAlreadyExists(newName)) {
-      alert(`${newName} is already added to photobook`)
+
+    // Update the number if the person already exists on the server 
+    const withSameName = persons.find(p => p.name === newName)
+    if(withSameName !== undefined) {
+      if(window.confirm(`${newName} is already added to phonebook, replace the old number with a new one?`)) {
+        const updatedPerson = {...withSameName, number: newNumber}
+        personService.update(updatedPerson)
+          .then(updateResponse => {
+            console.log('person updated: ', updateResponse)
+            setPersons(persons.map(p => p.id === updateResponse.id ? updateResponse : p)) 
+            setNewName('')
+            setNewNumber('')
+          })
+          .catch(error => alert(`failed to update person ${updatedPerson}:`, error))
+      }
       return
     }
 
+    // Otherwise create a new person
     const newPerson = {
       name: newName,
       number: newNumber
     }
-
     personService.create(newPerson)
       .then(createdPerson => {
         console.log('Created a new person on the server:', createdPerson)
@@ -85,10 +84,11 @@ const App = () => {
         setNewName('')
         setNewNumber('')
       })
+      .catch(error => alert(`failed to create new person ${newPerson}:`, error))
   }
 
   const onNameInputChange = (event) => {
-    setNewName(event.target.value)    
+    setNewName(event.target.value)
   }
   const onNumberInputChange = (event) => {
     setNewNumber(event.target.value)
@@ -97,6 +97,19 @@ const App = () => {
   const onFilterChange = (event) => {
     setFilter(event.target.value)
   }
+
+  const onDelete = (person) => {
+    if(window.confirm(`Delete ${person.name}?`)) {
+        console.log('deleting person:', person);
+        personService.remove(person.id)
+          .then(() => fillPersonList())
+          .catch(error => alert(`failed to delete person ${person}:`, error))
+    }
+  }
+
+  const filtered = filter.length === 0
+    ? persons
+    : persons.filter(p => p.name.toLowerCase().includes(filter.toLowerCase()))
 
   return (
     <div>
@@ -111,9 +124,9 @@ const App = () => {
         onNumberInputChange={onNumberInputChange} 
       />
       <h2>Numbers</h2>
-      <div>
-        <ContactList persons={persons} filter={filter}/>
-      </div>
+      <ul>
+        {filtered.map((p) => <Contact key = {p.id} person = {p} onDelete = {() => onDelete(p)} />) }
+      </ul>
     </div>
   )
 
