@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import axios from 'axios'
+import personService from './services/Persons'
 
 const Contact = ({name, number}) => {
   return (
@@ -8,11 +8,9 @@ const Contact = ({name, number}) => {
 }
 
 const ContactList = ({persons, filter}) => {
-  console.log('persons', persons);
   const filtered = filter.length === 0
     ? persons
     : persons.filter(p => p.name.toLowerCase().includes(filter.toLowerCase()))
-  console.log('filtered', filtered);
   return (
     filtered.map((p) => <Contact key = {p.name} name = {p.name} number = {p.number} />) 
   )  
@@ -51,13 +49,13 @@ const App = () => {
   const [filter, setFilter] = useState('')
 
   const hook = () => {
-    console.log('effect');
-    axios
-      .get('http://localhost:3001/persons')
-      .then(response => {
-        console.log('promise fulfilled')
-        setPersons(response.data)
-      })
+    personService.getAll()
+      .then(
+        allPersons => {
+          console.log('Got persons from server:', allPersons)
+          setPersons(allPersons)
+        }
+      )
   }
   useEffect(hook, [])
   
@@ -80,11 +78,10 @@ const App = () => {
       number: newNumber
     }
 
-    axios
-      .post('http://localhost:3001/persons', newPerson)
-      .then(response => {
-        console.log(response)
-        setPersons(persons.concat(newPerson))
+    personService.create(newPerson)
+      .then(createdPerson => {
+        console.log('Created a new person on the server:', createdPerson)
+        setPersons(persons.concat(createdPerson))
         setNewName('')
         setNewNumber('')
       })
@@ -94,7 +91,7 @@ const App = () => {
     setNewName(event.target.value)    
   }
   const onNumberInputChange = (event) => {
-    setNewNumber(event.target.value)    
+    setNewNumber(event.target.value)
   }
 
   const onFilterChange = (event) => {
