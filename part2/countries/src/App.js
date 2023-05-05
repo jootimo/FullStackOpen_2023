@@ -83,14 +83,16 @@ const CountryNameList = ({countries, onShowCountryInfoButtonClick}) => {
 
 const CountryDetailInfo = ({country}) => {
   const [weatherData, setWeatherData] = useState(null)
-  const [lat, lon] = country.capitalInfo.latlng
-
-  axios
-    .get(weatherBasePath.concat(`?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=temperature_2m,relativehumidity_2m,windspeed_10m`))
-    .then(response => {
-      console.log('got weather reponse: ', response.data)
-      setWeatherData(response.data)
-    })
+  
+  useEffect(() => {
+    const [lat, lon] = country.capitalInfo.latlng
+    axios
+      .get(weatherBasePath.concat(`?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=temperature_2m,relativehumidity_2m,windspeed_10m`))
+      .then(response => {
+        console.log('got weather reponse: ', response.data)
+        setWeatherData(response.data)
+      })
+  }, [country])
 
   console.log('showing detail info of ', country)
   
