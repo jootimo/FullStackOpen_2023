@@ -2,14 +2,69 @@ import './App.css';
 import {useState, useEffect} from 'react'
 import axios from 'axios'
 
-const basePath = 'https://restcountries.com/v3.1/'
+const countriesBasePath = 'https://restcountries.com/v3.1/'
 const allCountriesPath = 'all'
-const requiredInfo = '' //filtering doesn't seem to work due to some CORS error: '?fields=name,capital,area,languages,flags`'
+const countriesRequiredInfo = '' //filtering doesn't seem to work due to some CORS error: '?fields=name,capital,area,languages,flags`'
+
+const weatherBasePath = "https://api.open-meteo.com/v1/forecast"
+
+const getWeatherCodeDescription = (weatherCode) => {
+  switch (weatherCode) {
+    case 0:
+      return 'Clear sky'
+    case 1: case 2: case 3:
+      return 'Mainly clear, partly cloudy, and overcast'
+    case 45: case 48:
+      return 'Fog and depositing rime fog'
+    case 51: case 53: case 55:
+      return 'Drizzle: Light, moderate, and dense intensity'
+    case 56: case 57:
+      return 'Freezing Drizzle: Light and dense intensity'
+    case 61: case 63: case 65:
+      return 'Rain: Slight, moderate and heavy intensity'
+    case 66: case 67:
+      return 'Freezing Rain: Light and heavy intensity'
+    case 71: case 73: case 75:
+      return 'Snow fall: Slight, moderate, and heavy intensity'
+    case 77:
+      return 'Snow grains'
+    case 80: case 81: case 82:
+      return 'Rain showers: Slight, moderate, and violent'
+    case 85: case 86: 
+      return 'Snow showers slight and heavy'
+    case 95:
+      return 'Thunderstorm: Slight or moderate'
+    case 96: case 99:
+      return 'Thunderstorm with slight and heavy hail'
+    default:
+      return '';
+  }
+}
+
+const WeatherInfo = ({cityname, weatherData}) => {
+  if(cityname === null || cityname.length === 0 || weatherData === null) {
+    return (
+      <div> No weather data available </div>
+    )
+  }
+
+  return (
+    <div>
+      <h2> Weather in {cityname} </h2>
+      <p> {getWeatherCodeDescription(weatherData.current_weather.weathercode)} </p>
+      <ul>
+        <li> temperature: {weatherData.current_weather.temperature} °C </li>
+        <li> wind: {weatherData.current_weather.winddirection}°, {weatherData.current_weather.windspeed} m/s </li>
+      </ul>
+    </div>
+  )
+}
 
 const NoCountryToShow = ({msg}) => { return (
   <div> {msg} </div>
   ) 
 }
+
 const CountryNameList = ({countries, onShowCountryInfoButtonClick}) => {
   console.log('showing a list of countries: ', countries)
 
@@ -25,7 +80,18 @@ const CountryNameList = ({countries, onShowCountryInfoButtonClick}) => {
     </div>
   )
 }
+
 const CountryDetailInfo = ({country}) => {
+  const [weatherData, setWeatherData] = useState(null)
+  const [lat, lon] = country.capitalInfo.latlng
+
+  axios
+    .get(weatherBasePath.concat(`?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=temperature_2m,relativehumidity_2m,windspeed_10m`))
+    .then(response => {
+      console.log('got weather reponse: ', response.data)
+      setWeatherData(response.data)
+    })
+
   console.log('showing detail info of ', country)
   
   // Languages are stored as objects, e.g. { fin: 'Finnish', swe: 'Swedish' }
@@ -51,6 +117,9 @@ const CountryDetailInfo = ({country}) => {
     </div>
     <div>
       <img src={country.flags.png} alt={country.flag.alt}></img>
+    </div>
+    <div>
+      <WeatherInfo cityname={country.capital[0]} weatherData={weatherData}></WeatherInfo>
     </div>
   </div>
   )
@@ -97,7 +166,7 @@ const App = () => {
   useEffect(() => {
     console.log('first render: useEffect')
     axios
-      .get(basePath.concat(allCountriesPath).concat(requiredInfo))
+      .get(countriesBasePath.concat(allCountriesPath).concat(countriesRequiredInfo))
       .then(response => {
         console.log(response.data)
         setCountries(response.data) 
