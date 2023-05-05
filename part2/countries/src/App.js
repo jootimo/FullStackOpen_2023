@@ -10,13 +10,17 @@ const NoCountryToShow = ({msg}) => { return (
   <div> {msg} </div>
   ) 
 }
-const CountryNameList = ({countries}) => {
+const CountryNameList = ({countries, onShowCountryInfoButtonClick}) => {
   console.log('showing a list of countries: ', countries)
 
   return  (
     <div>
         <ul>
-          {countries.map((c) => <li key={c.name.common}> {c.name.common} </li>)}
+          {countries.map((c) => 
+          <li key={c.name.common}>
+             {c.name.common} 
+             <button onClick={() => onShowCountryInfoButtonClick(c)}> show </button>
+          </li>)}
         </ul>
     </div>
   )
@@ -52,7 +56,7 @@ const CountryDetailInfo = ({country}) => {
   )
 }
 
-const CountryInfo = ({allCountries, search: filter}) => {
+const CountryInfo = ({allCountries, filter, onShowCountryInfoButtonClick}) => {
   if(allCountries === null || allCountries.length === 0) {
     return (
       <NoCountryToShow msg={'Country information not loaded yet'}></NoCountryToShow>
@@ -70,7 +74,7 @@ const CountryInfo = ({allCountries, search: filter}) => {
   } 
   else if (filtered.length > 1) {
     return (
-      <CountryNameList countries={filtered}></CountryNameList>
+      <CountryNameList countries={filtered} onShowCountryInfoButtonClick={onShowCountryInfoButtonClick}></CountryNameList>
     )
   } 
   else if(filtered.length === 1) {
@@ -102,6 +106,11 @@ const App = () => {
 
   const onFilterChange = (event) => { setFilter(event.target.value) }
 
+  const onShowCountryInfoButtonClick = (country) => {
+    console.log('button pressed: ', country)
+    setFilter(country.name.common)
+  }
+
   return (
     <div className="App">
       <h1>Countries</h1>
@@ -111,7 +120,7 @@ const App = () => {
         </div>
       </form>
       <br></br>
-      <CountryInfo allCountries={countries} search={filter}></CountryInfo>
+      <CountryInfo allCountries={countries} filter={filter} onShowCountryInfoButtonClick={onShowCountryInfoButtonClick}></CountryInfo>
     </div>
   );
 }
